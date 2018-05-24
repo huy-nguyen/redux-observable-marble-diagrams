@@ -1,0 +1,44 @@
+Arguments: 
+  /Users/hnguyen1/.nvm/versions/node/v9.10.1/bin/node /usr/local/Cellar/yarn/1.6.0/libexec/bin/yarn.js add -D -E @babel/core @babel/preset-env @babel/preset-react @babel/register @cid-harvard/eslint-config @cid-harvard/tslint-config babel-core@7.0.0-bridge.0 babel-eslint babel-jest babel-loader css-loader dotenv eslint eslint-plugin-jest eslint-plugin-react html-webpack-plugin jest rxjs-tslint style-loader ts-jest ts-loader tslint typescript webpack webpack-cli webpack-serve
+
+PATH: 
+  /Users/hnguyen1/anaconda3/bin:/Users/hnguyen1/.nvm/versions/node/v9.10.1/bin:/Users/hnguyen1/.npm-packages/bin:/Users/hnguyen1/bin:/usr/local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/hnguyen1/.rvm/bin:/Users/hnguyen1/.rvm/bin
+
+Yarn version: 
+  1.6.0
+
+Node version: 
+  9.10.1
+
+Platform: 
+  darwin x64
+
+Trace: 
+  SyntaxError: /Users/hnguyen1/Sites/redux-observable-marble-diagrams/package.json: Unexpected token } in JSON at position 505
+      at JSON.parse (<anonymous>)
+      at /usr/local/Cellar/yarn/1.6.0/libexec/lib/cli.js:1130:59
+      at Generator.next (<anonymous>)
+      at step (/usr/local/Cellar/yarn/1.6.0/libexec/lib/cli.js:98:30)
+      at /usr/local/Cellar/yarn/1.6.0/libexec/lib/cli.js:109:13
+      at <anonymous>
+
+npm manifest: 
+  {
+    "scripts": {
+      "build": "webpack --config webpack.config.babel.js",
+      "dev": "webpack-serve --config webpack.config.babel.js",
+      "test:watch": "jest --verbose --watch",
+      "test": "jest --verbose --coverage",
+      "devtools": "node mainThreadDevTools.js & node workerDevTools.js",
+      "tslint": "tslint --project tsconfig.json --config tslint.json",
+      "tslint:fix": "tslint --project tsconfig.json --config tslint.json --fix",
+      "eslint": "eslint .",
+      "eslint:fix": "eslint . --fix"
+    },
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
