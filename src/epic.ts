@@ -5,10 +5,12 @@ import {
 import {
   debounceTime,
   filter,
+  withLatestFrom,
 } from 'rxjs/operators';
 import {
   Action,
   ActionTypes,
+  RootState,
   UpdateURLAction,
 } from './types';
 
@@ -23,8 +25,9 @@ export const getEpic = (
     // it'll use the "natural" scheduler:
     scheduler: Scheduler | undefined = undefined,
   ) =>
-    (action$: Observable<Action>) =>
+    (action$: Observable<Action>, state$: Observable<RootState>) =>
       action$.pipe(
         filter<Action, UpdateURLAction>(isUpdateURLAction),
         debounceTime(dueTime, scheduler),
+        withLatestFrom(state$),
       );
