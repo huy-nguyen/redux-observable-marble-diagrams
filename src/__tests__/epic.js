@@ -1,5 +1,5 @@
 import {
-  epic,
+  getEpic,
 } from '../epic';
 import {
   marbles,
@@ -14,7 +14,10 @@ test('Should only act on UpdateURLAction', marbles(m => {
     b: {type: 'Unknown'},
   };
   const action$ = m.cold('  -a-b-a-aaa----------|', values);
-  const expected$ = m.cold('-a---a-aaa----------|', values);
+  const expected$ = m.cold('-------------a------|', values);
+
+  // Inject `dueTime` and `TestScheduler` into epic:
+  const epic = getEpic(4, m.scheduler);
 
   const actual$ = epic(action$);
 
