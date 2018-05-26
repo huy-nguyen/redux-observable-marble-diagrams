@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const webpack = require('webpack');
@@ -5,8 +7,6 @@ const rxPaths = require('rxjs/_esm2015/path-mapping');
 const {
   mainThreadReduxDevToolsPort,
 } = require('./buildConstants');
-
-require('dotenv').config();
 
 const buildOutputDir = 'dist';
 
@@ -41,7 +41,7 @@ const config = {
     path: path.resolve(buildOutputDir),
     filename: 'bundle.[hash].js',
     chunkFilename: '[name].[hash]js',
-    pathinfo: true,
+    pathinfo: (mode === 'production') ? false : true,
   },
   module: {
     rules: [
@@ -64,10 +64,9 @@ const config = {
   },
   plugins: [
     new webpack.DefinePlugin({
-      GITHUB_TOKEN: (GITHUB_TOKEN === undefined) ? 'undefined' : JSON.stringify(GITHUB_TOKEN),
+      GITHUB_TOKEN: (mode === 'development' && GITHUB_TOKEN !== undefined) ? JSON.stringify(GITHUB_TOKEN) : 'undefined',
       'process.env.NODE_ENV': JSON.stringify(mode),
       MAIN_THREAD_REDUX_DEV_TOOLS_PORT: JSON.stringify(mainThreadReduxDevToolsPort),
-
     }),
     new HtmlWebpackPlugin({
       template: './src/index.ejs',

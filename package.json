@@ -8,7 +8,8 @@
     "tslint:fix": "tslint --project tsconfig.json --config tslint.json --fix",
     "eslint": "eslint .",
     "eslint:fix": "eslint . --fix",
-    "devtools": "node mainThreadDevTools.js"
+    "devtools": "node mainThreadDevTools.js",
+    "serve": "http-server dist"
   },
   "devDependencies": {
     "@babel/core": "7.0.0-beta.47",
@@ -17,6 +18,9 @@
     "@babel/register": "7.0.0-beta.47",
     "@cid-harvard/eslint-config": "0.1.2",
     "@cid-harvard/tslint-config": "0.3.0",
+    "@types/react": "16.3.14",
+    "@types/react-dom": "16.0.5",
+    "@types/react-redux": "6.0.0",
     "babel-core": "7.0.0-bridge.0",
     "babel-eslint": "8.2.3",
     "babel-jest": "23.0.0",
@@ -27,7 +31,9 @@
     "eslint-plugin-jest": "21.15.2",
     "eslint-plugin-react": "7.8.2",
     "html-webpack-plugin": "3.2.0",
+    "http-server": "0.11.1",
     "jest": "23.0.0",
+    "remote-redux-devtools": "0.5.12",
     "remotedev-server": "0.2.4",
     "rimraf": "2.6.2",
     "rxjs-compat": "6.2.0",
@@ -42,7 +48,11 @@
     "webpack-serve": "1.0.2"
   },
   "dependencies": {
+    "bootstrap": "4.1.1",
     "github-url-parse": "0.1.0",
+    "react": "16.4.0",
+    "react-dom": "16.4.0",
+    "react-redux": "5.0.7",
     "redux": "4.0.0",
     "redux-observable": "1.0.0-alpha.2",
     "rxjs": "6.2.0",

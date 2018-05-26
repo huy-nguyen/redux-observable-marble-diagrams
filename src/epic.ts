@@ -70,6 +70,8 @@ export const getEpic = (
               const fetchURL = `https://api.github.com/repos/${user}/${repo}/contents/${path}?ref=${branch}`;
 
               let ajaxRequest: AjaxRequest;
+              // Note: `GITHUB_TOKEN` will be replaced with a string
+              // value by webpack's `DefinePlugin`:
               if (GITHUB_TOKEN === undefined) {
                 // If no github token is provided, send an unauthenticated request:
                 ajaxRequest = {
