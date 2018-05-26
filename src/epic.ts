@@ -1,5 +1,8 @@
 import parse from 'github-url-parse';
 import {
+  Epic,
+} from 'redux-observable';
+import {
   concat,
   Observable,
   of,
@@ -7,13 +10,16 @@ import {
 } from 'rxjs';
 import {
   ajax,
+  AjaxError,
   AjaxRequest,
   AjaxResponse,
 } from 'rxjs/ajax';
 import {
+  catchError,
   debounceTime,
   filter,
   map,
+  retry,
   switchMap,
   withLatestFrom,
 } from 'rxjs/operators';
@@ -42,7 +48,7 @@ export const getEpic = (
     // Note: `undefined` scheduler passed to `debounceTime` in production means
     // it'll use the "natural" scheduler:
     scheduler: Scheduler | undefined = undefined,
-  ) =>
+  ): Epic<Action, RootState, {}, FetchOutcome> =>
     (action$: Observable<Action>, state$: Observable<RootState>) =>
       action$.pipe(
         filter<Action, UpdateURLAction>(isUpdateURLAction),
@@ -80,6 +86,7 @@ export const getEpic = (
               }
 
               const fetchPipeline$ = getAjax(ajaxRequest).pipe(
+                retry<AjaxResponse>(3),
                 map<AjaxResponse, FetchSuccessAction>(({response}) => {
                   if (Array.isArray(response)) {
                     // This means the fetched URL is a directory instead
@@ -90,7 +97,18 @@ export const getEpic = (
                   const decoded = atob(content);
                   return {type: ActionTypes.FETCH_SUCCESS, payload: {data: decoded}};
                 }),
-
+                catchError<any, FetchFailAction>((err: AjaxError) => {
+                  // Try to use error message in ajax response because we assume
+                  // it's more relevant that the `message` property of the `err`
+                  // observable:
+                  let message: string;
+                  if (err.xhr && err.xhr.response && err.xhr.response.message) {
+                    message = err.xhr.response.message;
+                  } else {
+                    message = err.message;
+                  }
+                  return of<FetchFailAction>({type: ActionTypes.FETCH_FAIL, payload: {message}});
+                }),
               );
               return concat(fetchBegin$, fetchPipeline$);
             }
