@@ -1,0 +1,88 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:8
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore dependency cache
+          key: dependency-cache-v1-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install dependencies
+          command: yarn
+      - save_cache:
+          name: Save depedency cache
+          key: dependency-cache-v1-{{ checksum "yarn.lock" }}
+          paths:
+            - node_modules
+      - run:
+          name: Build
+          command: yarn run build
+      - save_cache:
+          name: Save build output cache
+          key: build-output-v1-{{ .Branch }}-{{ .Revision }}
+          paths:
+            - dist
+      - run:
+          name: Run unit tests
+          command: yarn run test:ci
+          environment:
+            JEST_JUNIT_OUTPUT: reports/junit/js-test-results.xml
+      - run:
+          name: Run linters
+          command: yarn run lint
+      - store_test_results:
+          path: reports/junit
+  deploy:
+    docker:
+      - image: circleci/node:8
+    environment:
+      - TARGET_BRANCH: gh-pages
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore dependency cache
+          key: dependency-cache-v1-{{ checksum "yarn.lock" }}
+      - run:
+          name: Install dependencies
+          command: yarn
+      - restore_cache:
+          name: Restore build output cache
+          key: build-output-v1-{{ .Branch }}-{{ .Revision }}
+      - run:
+          name: Deploy to GitHub pages
+          # https://blog.frederikring.com/articles/deploying-github-pages-circle-ci/
+          command: |
+            git config --global user.email $GH_EMAIL
+            git config --global user.name $GH_NAME
+
+            git clone $CIRCLE_REPOSITORY_URL out
+
+            cd out
+            git checkout $TARGET_BRANCH || git checkout --orphan $TARGET_BRANCH
+            git rm -rf .
+
+            cp -a ../dist/* .
+            mkdir -p .circleci && cp ../gh-pages-circleci-config.yml .circleci/config.yml
+            git add -A
+            git commit -m "Automated deployment to GitHub Pages: ${CIRCLE_SHA1}" --allow-empty
+            git push origin $TARGET_BRANCH
+
+
+workflows:
+  version: 2
+  build_deploy:
+    jobs:
+      - build:
+          filters:
+            branches:
+              ignore:
+                - gh-pages
+      - deploy:
+          requires:
+            - build
+          filters:
+            branches:
+              only:
+                - master
