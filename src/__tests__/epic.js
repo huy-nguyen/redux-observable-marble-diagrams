@@ -1,5 +1,5 @@
 import {
-  getEpic,
+  epic,
 } from '../epic';
 import {
   marbles,
@@ -41,15 +41,16 @@ test('Happy path', marbles(m => {
   const action$ = m.cold('  -a-b-a-aaa----------|', values);
   const expected$ = m.cold('-------------xy-----|', values);
 
-
   const getAjaxObservable = jest.fn().mockReturnValueOnce(
-    of({response: { content: contentAsBase64}}).pipe(delay(1))
+    of({response: { content: contentAsBase64}}).pipe(delay(1)),
   );
 
   // Inject `dueTime` and `TestScheduler` into epic:
-  const epic = getEpic(getAjaxObservable, 4, m.scheduler);
-
-  const actual$ = epic(action$, state$);
+  const actual$ = epic(action$, state$, {
+    ajaxMethod: getAjaxObservable,
+    dueTime: 4,
+    scheduler: m.scheduler,
+  });
 
   m.expect(actual$).toBeObservable(expected$);
 }));
@@ -69,14 +70,14 @@ test('Should dispatch error message when invalid URL is entered', marbles(m => {
   const action$ = m.cold('  -a-b-a-aaa----------|', values);
   const expected$ = m.cold('-------------x------|', values);
 
-  // This mock will not be called so it doesn't matter what value it returns
-  const getAjaxObservable = jest.fn();
-
-  const epic = getEpic(getAjaxObservable, 4, m.scheduler);
-  const actual$ = epic(action$, state$);
+  const actual$ = epic(action$, state$, {
+    // This mock will not be called so it doesn't matter what value it returns
+    ajaxMethod: jest.fn(),
+    dueTime: 4,
+    scheduler: m.scheduler,
+  });
   m.expect(actual$).toBeObservable(expected$);
 }));
-
 
 test('Should show initial state when user clears input field', marbles(m => {
   const url = 'https://github.com/ReactiveX/rxjs/blob/master/index.js';
@@ -98,16 +99,17 @@ test('Should show initial state when user clears input field', marbles(m => {
   const action$ = m.cold('  -a-------a------|', values);
   const expected$ = m.cold('-----xy------z--|', values);
 
-
   const testAjax = jest.fn().mockReturnValueOnce(
-    of({response: { content: contentAsBase64}}).pipe(delay(1))
+    of({response: { content: contentAsBase64}}).pipe(delay(1)),
   );
 
-  const epic = getEpic(testAjax, 4, m.scheduler);
-  const actual$ = epic(action$, state$);
+  const actual$ = epic(action$, state$, {
+    ajaxMethod: testAjax,
+    dueTime: 4,
+    scheduler: m.scheduler,
+  });
   m.expect(actual$).toBeObservable(expected$);
 }));
-
 
 it('Should retry when encountering fetch error', marbles(m => {
   const contentAsString = 'This is a test.';
@@ -135,8 +137,11 @@ it('Should retry when encountering fetch error', marbles(m => {
   const action$ = m.cold('  -a-b-a-aaa----------|', values);
   const expected$ = m.cold('-------------(xy)---|', values);
 
-  const epic$ = getEpic(getTestAjaxObservable, 4, m.scheduler);
-  const actual$ = epic$(action$, state$);
+  const actual$ = epic(action$, state$, {
+    ajaxMethod: getTestAjaxObservable,
+    dueTime: 4,
+    scheduler: m.scheduler,
+  });
   m.expect(actual$).toBeObservable(expected$);
 
 }));
@@ -151,7 +156,7 @@ it('Should dispatch "fetch fail" action when retries are unsuccessful due to 404
   // The AJAX request will fail four times and succeed when retried on the fifth time.
   // However, because the epic only retries three times, only errors will be emitted:
   const getTestAjaxObservable = getRetryTestObservable(
-    [ajaxFailure, ajaxFailure, ajaxFailure, ajaxFailure], undefined
+    [ajaxFailure, ajaxFailure, ajaxFailure, ajaxFailure], undefined,
   );
   const values = {
     a: {type: ActionTypes.UPDATE_URL},
@@ -165,9 +170,11 @@ it('Should dispatch "fetch fail" action when retries are unsuccessful due to 404
   const action$ = m.cold('  -a-b-a-aaa----------|', values);
   const expected$ = m.cold('-------------(xz)---|', values);
 
-  const epic$ = getEpic(getTestAjaxObservable, 4, m.scheduler);
-  const actual$ = epic$(action$, state$);
+  const actual$ = epic(action$, state$, {
+    ajaxMethod: getTestAjaxObservable,
+    dueTime: 4,
+    scheduler: m.scheduler,
+  });
   m.expect(actual$).toBeObservable(expected$);
 
 }));
-
