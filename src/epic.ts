@@ -49,8 +49,11 @@ export interface EpicDependencies {
 
 export const epic: Epic<Action, RootState, EpicDependencies, FetchOutcome> =
     (action$: Observable<Action>, state$: Observable<RootState>, {
+      // These arguments allow for dependency injection during testing:
       getAjax = ajax,
       dueTime = 250,
+      // Note: `undefined` scheduler passed to `debounceTime` in production means
+      // it'll use the "natural" scheduler:
       scheduler,
     }: EpicDependencies) =>
       action$.pipe(
