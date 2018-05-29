@@ -42,81 +42,81 @@ export type FetchOutcome = FetchInitialAction | FetchBeginAction |
                             FetchSuccessAction | FetchFailAction;
 
 export interface EpicDependencies {
-  getAjax: typeof ajax;
-  dueTime: number;
+  getAjax?: typeof ajax;
+  dueTime?: number;
   scheduler?: Scheduler;
 }
 
 export const epic: Epic<Action, RootState, EpicDependencies, FetchOutcome> =
-  (action$: Observable<Action>, state$: Observable<RootState>, {
-    getAjax = ajax,
-    dueTime = 250,
-    scheduler,
-  }: EpicDependencies) =>
-    action$.pipe(
-      filter<Action, UpdateURLAction>(isUpdateURLAction),
-      debounceTime(dueTime, scheduler),
-      withLatestFrom(state$),
-      switchMap<[UpdateURLAction, RootState], FetchOutcome>(([, {url}]): Observable<FetchOutcome> => {
-        if (url === '') {
-          // If the user input is blank, show the initial prompt:
-          return of<FetchInitialAction>({type: ActionTypes.FETCH_INITIAL});
-        } else {
-          const parseResult = parse(url);
-          if (parseResult === null) {
-            // If we cannot parse the URL into a GitHub URL at all, show an error message:
-            return of<FetchFailAction>({type: ActionTypes.FETCH_FAIL, payload: {message: 'Invalid GitHub URL'}});
+    (action$: Observable<Action>, state$: Observable<RootState>, {
+      getAjax = ajax,
+      dueTime = 250,
+      scheduler,
+    }: EpicDependencies) =>
+      action$.pipe(
+        filter<Action, UpdateURLAction>(isUpdateURLAction),
+        debounceTime(dueTime, scheduler),
+        withLatestFrom(state$),
+        switchMap<[UpdateURLAction, RootState], FetchOutcome>(([, {url}]): Observable<FetchOutcome> => {
+          if (url === '') {
+            // If the user input is blank, show the initial prompt:
+            return of<FetchInitialAction>({type: ActionTypes.FETCH_INITIAL});
           } else {
-            // Otherwise, initiate a fetch:
-            const fetchBegin$ = of<FetchBeginAction>({type: ActionTypes.FETCH_BEGIN});
-            const {branch, path, repo, user} = parseResult;
-            const fetchURL = `https://api.github.com/repos/${user}/${repo}/contents/${path}?ref=${branch}`;
-
-            let ajaxRequest: AjaxRequest;
-            // Note: `GITHUB_TOKEN` will be replaced with a string
-            // value by webpack's `DefinePlugin`:
-            if (GITHUB_TOKEN === undefined) {
-              // If no github token is provided, send an unauthenticated request:
-              ajaxRequest = {
-                url: fetchURL,
-              };
+            const parseResult = parse(url);
+            if (parseResult === null) {
+              // If we cannot parse the URL into a GitHub URL at all, show an error message:
+              return of<FetchFailAction>({type: ActionTypes.FETCH_FAIL, payload: {message: 'Invalid GitHub URL'}});
             } else {
-              // Otherwise, send credentials along to avoid rate limit:
-              ajaxRequest = {
-                url: fetchURL,
-                headers: {
-                  Authorization: `token ${GITHUB_TOKEN}`,
-                },
-              };
-            }
+              // Otherwise, initiate a fetch:
+              const fetchBegin$ = of<FetchBeginAction>({type: ActionTypes.FETCH_BEGIN});
+              const {branch, path, repo, user} = parseResult;
+              const fetchURL = `https://api.github.com/repos/${user}/${repo}/contents/${path}?ref=${branch}`;
 
-            const fetchPipeline$ = getAjax(ajaxRequest).pipe(
-              retry<AjaxResponse>(3),
-              map<AjaxResponse, FetchSuccessAction>(({response}) => {
-                if (Array.isArray(response)) {
-                  // This means the fetched URL is a directory instead
-                  // of a file:
-                  throw new Error('URL is a GitHub directory instead of a file');
-                }
-                const {content} = response;
-                const decoded = atob(content);
-                return {type: ActionTypes.FETCH_SUCCESS, payload: {data: decoded}};
-              }),
-              catchError<any, FetchFailAction>((err: AjaxError) => {
-                // Try to use error message in ajax response because we assume
-                // it's more relevant that the `message` property of the `err`
-                // observable:
-                let message: string;
-                if (err.xhr && err.xhr.response && err.xhr.response.message) {
-                  message = err.xhr.response.message;
-                } else {
-                  message = err.message;
-                }
-                return of<FetchFailAction>({type: ActionTypes.FETCH_FAIL, payload: {message}});
-              }),
-            );
-            return concat(fetchBegin$, fetchPipeline$);
+              let ajaxRequest: AjaxRequest;
+              // Note: `GITHUB_TOKEN` will be replaced with a string
+              // value by webpack's `DefinePlugin`:
+              if (GITHUB_TOKEN === undefined) {
+                // If no github token is provided, send an unauthenticated request:
+                ajaxRequest = {
+                  url: fetchURL,
+                };
+              } else {
+                // Otherwise, send credentials along to avoid rate limit:
+                ajaxRequest = {
+                  url: fetchURL,
+                  headers: {
+                    Authorization: `token ${GITHUB_TOKEN}`,
+                  },
+                };
+              }
+
+              const fetchPipeline$ = getAjax(ajaxRequest).pipe(
+                retry<AjaxResponse>(3),
+                map<AjaxResponse, FetchSuccessAction>(({response}) => {
+                  if (Array.isArray(response)) {
+                    // This means the fetched URL is a directory instead
+                    // of a file:
+                    throw new Error('URL is a GitHub directory instead of a file');
+                  }
+                  const {content} = response;
+                  const decoded = atob(content);
+                  return {type: ActionTypes.FETCH_SUCCESS, payload: {data: decoded}};
+                }),
+                catchError<any, FetchFailAction>((err: AjaxError) => {
+                  // Try to use error message in ajax response because we assume
+                  // it's more relevant that the `message` property of the `err`
+                  // observable:
+                  let message: string;
+                  if (err.xhr && err.xhr.response && err.xhr.response.message) {
+                    message = err.xhr.response.message;
+                  } else {
+                    message = err.message;
+                  }
+                  return of<FetchFailAction>({type: ActionTypes.FETCH_FAIL, payload: {message}});
+                }),
+              );
+              return concat(fetchBegin$, fetchPipeline$);
+            }
           }
-        }
-      }),
-    );
+        }),
+      );

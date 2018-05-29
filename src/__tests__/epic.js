@@ -42,7 +42,7 @@ test('Happy path', marbles(m => {
   const expected$ = m.cold('-------------xy-----|', values);
 
   const getAjaxObservable = jest.fn().mockReturnValueOnce(
-    of({response: { content: contentAsBase64}}).pipe(delay(1)),
+    of({response: { content: contentAsBase64}}).pipe(delay(1))
   );
 
   // Inject `dueTime` and `TestScheduler` into epic:
@@ -178,3 +178,4 @@ it('Should dispatch "fetch fail" action when retries are unsuccessful due to 404
   m.expect(actual$).toBeObservable(expected$);
 
 }));
+
