@@ -42,14 +42,14 @@ export type FetchOutcome = FetchInitialAction | FetchBeginAction |
                             FetchSuccessAction | FetchFailAction;
 
 export interface EpicDependencies {
-  ajaxMethod: typeof ajax;
+  getAjax: typeof ajax;
   dueTime: number;
   scheduler?: Scheduler;
 }
 
 export const epic: Epic<Action, RootState, EpicDependencies, FetchOutcome> =
   (action$: Observable<Action>, state$: Observable<RootState>, {
-    ajaxMethod = ajax,
+    getAjax = ajax,
     dueTime = 250,
     scheduler,
   }: EpicDependencies) =>
@@ -90,7 +90,7 @@ export const epic: Epic<Action, RootState, EpicDependencies, FetchOutcome> =
               };
             }
 
-            const fetchPipeline$ = ajaxMethod(ajaxRequest).pipe(
+            const fetchPipeline$ = getAjax(ajaxRequest).pipe(
               retry<AjaxResponse>(3),
               map<AjaxResponse, FetchSuccessAction>(({response}) => {
                 if (Array.isArray(response)) {

@@ -47,7 +47,7 @@ test('Happy path', marbles(m => {
 
   // Inject `dueTime` and `TestScheduler` into epic:
   const actual$ = epic(action$, state$, {
-    ajaxMethod: getAjaxObservable,
+    getAjax: getAjaxObservable,
     dueTime: 4,
     scheduler: m.scheduler,
   });
@@ -72,7 +72,7 @@ test('Should dispatch error message when invalid URL is entered', marbles(m => {
 
   const actual$ = epic(action$, state$, {
     // This mock will not be called so it doesn't matter what value it returns
-    ajaxMethod: jest.fn(),
+    getAjax: jest.fn(),
     dueTime: 4,
     scheduler: m.scheduler,
   });
@@ -104,7 +104,7 @@ test('Should show initial state when user clears input field', marbles(m => {
   );
 
   const actual$ = epic(action$, state$, {
-    ajaxMethod: testAjax,
+    getAjax: testAjax,
     dueTime: 4,
     scheduler: m.scheduler,
   });
@@ -138,7 +138,7 @@ it('Should retry when encountering fetch error', marbles(m => {
   const expected$ = m.cold('-------------(xy)---|', values);
 
   const actual$ = epic(action$, state$, {
-    ajaxMethod: getTestAjaxObservable,
+    getAjax: getTestAjaxObservable,
     dueTime: 4,
     scheduler: m.scheduler,
   });
@@ -171,7 +171,7 @@ it('Should dispatch "fetch fail" action when retries are unsuccessful due to 404
   const expected$ = m.cold('-------------(xz)---|', values);
 
   const actual$ = epic(action$, state$, {
-    ajaxMethod: getTestAjaxObservable,
+    getAjax: getTestAjaxObservable,
     dueTime: 4,
     scheduler: m.scheduler,
   });
