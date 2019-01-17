@@ -54,11 +54,6 @@ export const reducer: Reducer<RootState, Action> =
           status: FetchStatus.Initial,
         },
       };
-    case ActionTypes.UPDATE_URL:
-      return {
-        ...prevState,
-        url: action.payload.url,
-      };
     default:
       return prevState;
   }
