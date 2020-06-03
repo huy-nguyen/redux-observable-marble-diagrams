@@ -60,5 +60,15 @@
     "redux-observable": "1.0.0-alpha.2",
     "rxjs": "6.2.0",
     "rxjs-marbles": "4.1.0"
+  },
+  "resolutions": {
+    "mem": ">=4.0.0",
+    "serialize-javascript": ">=2.1.1",
+    "kind-of": ">=6.0.3",
+    "qs": ">=6.0.4",
+    "hoek": ">=4.2.1",
+    "js-yaml": ">=3.13.1",
+    "set-value": ">=2.0.1",
+    "minimist": ">=0.2.1"
   }
 }
